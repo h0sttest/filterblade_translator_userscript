@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.9
+// @version      3.28.10
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -82,6 +82,7 @@
 				let trans = _DICT_[trimmed];
 				if(trimmed && trans && trimmed !== trans) {
 					opt.value = (trim[1] || trim[3]) ? origin.replace(trimmed, trans) : trans;
+					opt.dataset.origin = origin;
 					if(dual) {
 						opt.textContent = origin;
 					}
@@ -92,9 +93,9 @@
 			let trans = inp.value;
 			let trim = trimRegex.exec(trans);
 			let trimmed = trim[2];
-			let origin = Object.keys(_DICT_)[Object.values(_DICT_).indexOf(trimmed)];
+			let origin = sel.querySelector(`[value="${trimmed}"]`)?.dataset.origin || null;
 			if(!trimmed || !origin) return;
-			inp.value = (trim[1] || trim[3]) ? trans.replace(trimmed, origin) : origin;
+			inp.value = origin;
 		}
 		inp.addEventListener('keydown', (e) => {
 			if(e.keyCode === 13)
