@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.10
+// @version      3.28.11
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -35,18 +35,21 @@
 	let disconnect = disconnector.dispatchEvent.bind(disconnector, new Event('disconnect'));
 
 	function navAccord(accord, depth = 0) {
-		for(let o of accord.content) {
+		let content = accord.content;
+		if(!content) {
+			return observe(accord.id, accord);
+		}
+		for(let o of content) {
 			if(o instanceof VisualDiv) {
 				for(let d of o.content) {
-					observe(d.id, d);
+					d && navAccord(d, ++depth);
 				}
-			} else if(o instanceof ElementAdder_Tier) {
+			} else if((o instanceof ElementAdder_Tier) || (o instanceof ElementAdder_Stat)) {
 				for(let d of o.childElements) {
-					navAccord(d, ++depth);
+					d && navAccord(d, ++depth);
 				}
-			} else {
-				observe(o.id, o);
 			}
+			observe(o.id, o);
 		}
 	}
 
@@ -59,6 +62,12 @@
 			pre = "ItemProgressionItemContainer";
 		} else if(type instanceof VisualCheckboxButton || type == "checkbox") {
 			pre = "CheckBoxButtonContainer";
+		} else if(type instanceof ItemProgressionUI || type == "progression") {
+			pre = "ItemProgressionItemContainer";
+		} else if(type instanceof ElementAdder_Tier || type == "addtier") {
+			bindAdd(type);
+		} else if(type instanceof ElementAdder_Stat || type == "addstat") {
+			bindAdd(type);
 		}
 		if(pre === "") return;
 		let node = document.getElementById(pre + id);
@@ -105,6 +114,20 @@
 		bindObs(sel, callback);
 	}
 
+	function bindAdd(type) {
+		if(!type || type.transBinded) return;
+		type.transBinded = true;
+		let arr = type.childElements;
+		if(!arr || !(arr instanceof Array)) return;
+		let bakPush = arr.push;
+		arr.push = function(e) {
+			setTimeout(() => {
+				navAccord(e);
+			}, 0);
+			return bakPush.apply(this, arguments);
+		}
+	}
+
 	function bindObs(node, arg) {
 		if(!node || node.dataset.transBinded) return;
 		node.dataset.transBinded = "true";
@@ -141,6 +164,8 @@
 	let bakOpen = VisualAccordion_OnDemand.prototype.openAccordion;
 	let bakClear = ChangeStorage.prototype.clearStorage;
 	VisualAccordion_OnDemand.prototype.openAccordion = function() {
+		if(localStorage.getItem("translator:info"))
+			console.info(this);
 		navAccord(this);
 		bindObs(window.hoverBox);
 		bindObs(window.LootSimulatorInnerDiv, simRegex);
