@@ -152,7 +152,7 @@ const _POE_DICT_ = {"Life Flasks":"생명력 플라스크","Mana Flasks":"마나
 		node.dataset.transBinded = "true";
 		let regex = (arg instanceof RegExp) ? arg : trimRegex;
 		let callback = (arg instanceof Function) ? arg : function(m) {
-			if(!node ||!localStorage.getItem("translator")) return;
+			if(!localStorage.getItem("translator")) return;
 			let walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, (text) => {
 				if(!text.nodeValue || !_DICT_[regex.exec(text.nodeValue)[2]])
 					return NodeFilter.FILTER_REJECT;
