@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.12
+// @version      3.28.13
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -53,17 +53,22 @@
 		let pre = "";
 		if(type instanceof CustomSet || type == "list") {
 			pre = "VisualSortableList";
+			bindBTM(id);
 			bindDropdown(id);
 		} else if(type instanceof BaseTypeMatrixUI || type == "table") {
 			pre = "ItemProgressionItemContainer";
-		} else if(type instanceof VisualCheckboxButton || type == "checkbox") {
-			pre = "CheckBoxButtonContainer";
+			observe(id, "controlDropdown");
 		} else if(type instanceof ItemProgressionUI || type == "progression") {
 			pre = "ItemProgressionItemContainer";
+			observe(id, "controlDropdown");
+		} else if(type instanceof VisualCheckboxButton || type == "checkbox") {
+			pre = "CheckBoxButtonContainer";
 		} else if(type instanceof ElementAdder_Tier || type == "addtier") {
 			bindAdd(type);
 		} else if(type instanceof ElementAdder_Stat || type == "addstat") {
 			bindAdd(type);
+		} else if(typeof type === 'string') {
+			pre = type;
 		}
 		if(pre === "") return;
 		let node = document.getElementById(pre + id);
@@ -110,6 +115,20 @@
 		bindObs(sel, callback);
 	}
 
+	function bindBTM(id) {
+		let btm = document.getElementById("sortListContainer_BTM" + id);
+		if(!btm) return;
+		let o = new MutationObserver(function (m, o) {
+			observe(id + "_BTM", "progression");
+			o && o.disconnect();
+		}).observe(btm, {
+			childList: true
+		});
+		disconnector.addEventListener('disconnect', (e) => {
+			o && o.disconnect();
+		}, { once: true });
+	} 
+
 	function bindAdd(type) {
 		if(!type || type.transBinded) return;
 		type.transBinded = true;
@@ -129,7 +148,7 @@
 		node.dataset.transBinded = "true";
 		let regex = (arg instanceof RegExp) ? arg : trimRegex;
 		let callback = (arg instanceof Function) ? arg : function(m) {
-			if(!localStorage.getItem("translator")) return;
+			if(!node ||!localStorage.getItem("translator")) return;
 			let walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, (text) => {
 				if(!text.nodeValue || !_DICT_[regex.exec(text.nodeValue)[2]])
 					return NodeFilter.FILTER_REJECT;
@@ -200,7 +219,7 @@
 	css.type = 'text/css';
 	css.appendChild(document.createTextNode(`
 		.BTM_TableCell > .ItemProgression_ItemLabel
-		{ vertical-align: top !important; overflow: visible !important; }
+		{ line-height: 1rem; }
 	`));
 	document.head.appendChild(css);
 })();
