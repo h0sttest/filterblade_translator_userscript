@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.13
+// @version      3.28.14
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -70,11 +70,12 @@
 		} else if(typeof type === 'string') {
 			pre = type;
 		}
-		if(pre === "") return;
+		if(pre === "") return false;
 		let node = document.getElementById(pre + id);
 		if(node) {
-			bindObs(node);
+			return bindObs(node);
 		}
+		return false
 	}
 
 	function bindDropdown(id) {
@@ -117,7 +118,7 @@
 
 	function bindBTM(id) {
 		let btm = document.getElementById("sortListContainer_BTM" + id);
-		if(!btm) return;
+		if(!btm || observe(id + "_BTM", "progression")) return;
 		let o = new MutationObserver(function (m, o) {
 			observe(id + "_BTM", "progression");
 			o && o.disconnect();
@@ -144,7 +145,8 @@
 	}
 
 	function bindObs(node, arg) {
-		if(!node || node.dataset.transBinded) return;
+		if(!node) return false;
+		if(node.dataset.transBinded) return true;
 		node.dataset.transBinded = "true";
 		let regex = (arg instanceof RegExp) ? arg : trimRegex;
 		let callback = (arg instanceof Function) ? arg : function(m) {
@@ -172,6 +174,7 @@
 		disconnector.addEventListener('disconnect', (e) => {
 			o && o.disconnect();
 		}, { once: true });
+		return true;
 	}
 
 	if(!window.FilterBlade || !window.VisualAccordion_OnDemand)
