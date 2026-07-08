@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.11
+// @version      3.28.12
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -16,11 +16,6 @@
 (function() {
 	'use strict';
 
-	// @_POE1_DICT_ PoE1 전용
-	// @_POE2_DICT_ PoE2 전용
-	// @_POE_DICT_ PoE1 + PoE2
-	const _DICT_ = _POE_DICT_;
-
 	if(!localStorage.getItem("translator")) {
 		let v = new Date().getTime();
 		localStorage.setItem("translator:dropdown", v);
@@ -29,6 +24,7 @@
 		localStorage.setItem("translator", v);
 	}
 
+	let _DICT_ = _POE_DICT_;
 	let trimRegex = /^(\s*)(.*?)(\s*)$/;
 	let simRegex = /^(\s*)(?:\d+x )?(?:Superior )?(?:Synthesised )?(.*?)(?: \(Tier \d+\))?(\s*)$/;
 	let disconnector = new EventTarget();
@@ -159,10 +155,21 @@
 		}, { once: true });
 	}
 
-	if(!window.ChangeStorage || !window.VisualAccordion_OnDemand)
+	if(!window.FilterBlade || !window.VisualAccordion_OnDemand)
 		return console.error("Translator: Not Found");
+	let bakInit = FilterBlade.prototype.initOrReload;
 	let bakOpen = VisualAccordion_OnDemand.prototype.openAccordion;
-	let bakClear = ChangeStorage.prototype.clearStorage;
+	FilterBlade.prototype.initOrReload = async function() {
+		if(this.gameType == "Poe1" && typeof _POE1_DICT_ !== 'undefined') {
+			_DICT_ = _POE1_DICT_;
+		} else if(this.gameType == "Poe2" && typeof _POE2_DICT_ !== 'undefined') {
+			_DICT_ = _POE2_DICT_;
+		} else {
+			_DICT_ = _POE_DICT_;
+		}
+		disconnect();
+		return bakInit.apply(this, arguments);
+	}
 	VisualAccordion_OnDemand.prototype.openAccordion = function() {
 		if(localStorage.getItem("translator:info"))
 			console.info(this);
@@ -170,10 +177,6 @@
 		bindObs(window.hoverBox);
 		bindObs(window.LootSimulatorInnerDiv, simRegex);
 		return bakOpen.apply(this, arguments);
-	}
-	ChangeStorage.prototype.clearStorage = function() {
-		disconnect();
-		return bakClear.apply(this, arguments);
 	}
 })();
 
