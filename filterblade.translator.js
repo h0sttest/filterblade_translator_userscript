@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.18
+// @version      3.28.19
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -94,6 +94,7 @@ const _POE_DICT_ = {"Life Flasks":"생명력 플라스크","Mana Flasks":"마나
 				let trans = _DICT_[trimmed];
 				if(trimmed && trans && trimmed !== trans) {
 					opt.textContent = (trim[1] || trim[3]) ? origin.replace(trimmed, trans) : trans;
+					opt.dataset.trans = opt.textContent;
 				}
 			});
 		}
@@ -101,7 +102,7 @@ const _POE_DICT_ = {"Life Flasks":"생명력 플라스크","Mana Flasks":"마나
 			let trans = inp.value;
 			let trim = trimRegex.exec(trans);
 			let trimmed = trim[2];
-			let origin = sel.querySelector(`[value="${trimmed}"]`)?.dataset.origin || null;
+			let origin = sel.querySelector(`[data-trans="${trimmed}"]`)?.value || null;
 			if(!trimmed || !origin) return;
 			inp.value = origin;
 		}
