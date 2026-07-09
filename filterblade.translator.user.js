@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.14
+// @version      3.28.15
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -60,7 +60,6 @@
 			observe(id, "controlDropdown");
 		} else if(type instanceof ItemProgressionUI || type == "progression") {
 			pre = "ItemProgressionItemContainer";
-			observe(id, "controlDropdown");
 		} else if(type instanceof VisualCheckboxButton || type == "checkbox") {
 			pre = "CheckBoxButtonContainer";
 		} else if(type instanceof ElementAdder_Tier || type == "addtier") {
@@ -118,9 +117,9 @@
 
 	function bindBTM(id) {
 		let btm = document.getElementById("sortListContainer_BTM" + id);
-		if(!btm || observe(id + "_BTM", "progression")) return;
+		if(!btm || observe(id + "_BTM", "table")) return;
 		let o = new MutationObserver(function (m, o) {
-			observe(id + "_BTM", "progression");
+			observe(id + "_BTM", "table");
 			o && o.disconnect();
 		}).observe(btm, {
 			childList: true
