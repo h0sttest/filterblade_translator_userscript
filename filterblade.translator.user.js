@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.15
+// @version      3.28.17
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -19,7 +19,6 @@
 	if(!localStorage.getItem("translator")) {
 		let v = new Date().getTime();
 		localStorage.setItem("translator:dropdown", v);
-		localStorage.setItem("translator:dropdownDual", v);
 		localStorage.setItem("translator:keephover", v);
 		localStorage.setItem("translator", v);
 	}
@@ -91,11 +90,7 @@
 				let trimmed = trim[2];
 				let trans = _DICT_[trimmed];
 				if(trimmed && trans && trimmed !== trans) {
-					opt.value = (trim[1] || trim[3]) ? origin.replace(trimmed, trans) : trans;
-					opt.dataset.origin = origin;
-					if(dual) {
-						opt.textContent = origin;
-					}
+					opt.textContent = (trim[1] || trim[3]) ? origin.replace(trimmed, trans) : trans;
 				}
 			});
 		}
