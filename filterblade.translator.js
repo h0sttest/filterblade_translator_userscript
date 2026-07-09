@@ -87,7 +87,6 @@ const _POE_DICT_ = {"Life Flasks":"생명력 플라스크","Mana Flasks":"마나
 		if(!inp || !sel || !btn) return;
 		function callback(m) {
 			if(!localStorage.getItem("translator:dropdown") || !localStorage.getItem("translator")) return;
-			let dual = !!localStorage.getItem("translator:dropdownDual");
 			sel.childNodes.forEach((opt) => {
 				let origin = opt.value;
 				let trim = trimRegex.exec(origin);

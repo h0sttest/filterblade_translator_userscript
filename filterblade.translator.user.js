@@ -83,7 +83,6 @@
 		if(!inp || !sel || !btn) return;
 		function callback(m) {
 			if(!localStorage.getItem("translator:dropdown") || !localStorage.getItem("translator")) return;
-			let dual = !!localStorage.getItem("translator:dropdownDual");
 			sel.childNodes.forEach((opt) => {
 				let origin = opt.value;
 				let trim = trimRegex.exec(origin);
