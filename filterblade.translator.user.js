@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.19
+// @version      3.28.20
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -30,22 +30,22 @@
 	let disconnect = disconnector.dispatchEvent.bind(disconnector, new Event('disconnect'));
 
 	function navAccord(accord, depth = 0) {
-		let content = accord.content;
-		if(!content) {
-			return observe(accord.id, accord);
-		}
-		for(let o of content) {
-			if(o instanceof VisualDiv) {
-				for(let d of o.content) {
-					d && navAccord(d, ++depth);
-				}
-			} else if((o instanceof ElementAdder_Tier) || (o instanceof ElementAdder_Stat)) {
-				for(let d of o.childElements) {
-					d && navAccord(d, ++depth);
-				}
+		if(depth > 0 && (accord instanceof VisualAccordion_OnDemand)) {
+			return false;
+		} else if((accord instanceof VisualDiv) || (accord instanceof VisualAccordion_OnDemand)) {
+			for(let d of accord.content) {
+				d && navAccord(d, ++depth);
 			}
-			observe(o.id, o);
+		} else if((accord instanceof ElementAdder_Tier) || (accord instanceof ElementAdder_Stat)) {
+			for(let d of accord.childElements) {
+				d && navAccord(d, ++depth);
+			}
+		} else if(accord instanceof ListHandler) {
+			for(let d of accord.listElements) {
+				d && navAccord(d, ++depth);
+			}
 		}
+		return observe(accord.id, accord);
 	}
 
 	function observe(id, type) {
@@ -65,6 +65,8 @@
 			bindAdd(type);
 		} else if(type instanceof ElementAdder_Stat || type == "addstat") {
 			bindAdd(type);
+		} else if(type instanceof ListHandler || type == "addlist") {
+			bindAdd(type);
 		} else if(typeof type === 'string') {
 			pre = type;
 		}
@@ -80,7 +82,7 @@
 		let inp = document.getElementById("VisualSortableListTextInput" + id);
 		let sel = inp.list || document.getElementById("VisualSortableListTextInput"+id+"_data");
 		let btn = document.getElementById("VisualSortableList_AddButton" + id);
-		if(!inp || !sel || !btn) return;
+		if(!inp || !sel || !btn || sel.dataset.transBinded) return;
 		function callback(m) {
 			if(!localStorage.getItem("translator:dropdown") || !localStorage.getItem("translator")) return;
 			sel.childNodes.forEach((opt) => {
@@ -127,7 +129,7 @@
 	function bindAdd(type) {
 		if(!type || type.transBinded) return;
 		type.transBinded = true;
-		let arr = type.childElements;
+		let arr = type.childElements || type.listElements;
 		if(!arr || !(arr instanceof Array)) return;
 		let bakPush = arr.push;
 		arr.push = function(e) {
@@ -201,11 +203,14 @@
 (function() {
 	let key = false;
 	let evt = (e) => key = e.ctrlKey || e.shiftKey;
+	let bakClear = window.clearHoverBox;
 	document.addEventListener('keydown', evt);
 	document.addEventListener('keyup', evt);
 	window.clearHoverBox = function(e) {
-		e || (e = document.getElementById("hoverBox"));
-		e && !(key && !!localStorage.getItem("translator:keephover") && e.matches(":hover")) && (e.style.display = "none")
+		if(key && !!localStorage.getItem("translator:keephover") && e.matches(":hover")) {
+			return false;
+		}
+		return bakClear.apply(this, arguments);
 	}
 })();
 
