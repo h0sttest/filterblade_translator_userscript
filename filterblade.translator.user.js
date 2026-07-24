@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filterblade Translator
 // @namespace    filterblade.translator
-// @version      3.28.20
+// @version      3.29
 // @description  translate filterblade.xyz
 // @author       hosttest
 // @run-at       document-end
@@ -207,7 +207,7 @@
 	document.addEventListener('keydown', evt);
 	document.addEventListener('keyup', evt);
 	window.clearHoverBox = function(e) {
-		if(key && !!localStorage.getItem("translator:keephover") && e.matches(":hover")) {
+		if(key && !!localStorage.getItem("translator:keephover") && e && e.matches(":hover")) {
 			return false;
 		}
 		return bakClear.apply(this, arguments);
